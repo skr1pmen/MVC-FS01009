@@ -2,10 +2,12 @@
 
 namespace app\controllers;
 
-class UserController
+use app\core\InitController;
+
+class UserController extends InitController
 {
     public function actionProfile()
     {
-        var_dump("Страница пользователя!");
+        $this->render('profile');
     }
 }

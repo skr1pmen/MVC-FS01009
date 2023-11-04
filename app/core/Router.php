@@ -35,16 +35,16 @@ class Router
             if (class_exists($path_controller)) {
                 $action = 'action' . ucfirst($this->params['action']);
                 if (method_exists($path_controller, $action)) {
-                    $controller = new $path_controller;
+                    $controller = new $path_controller($this->params);
                     $controller->$action();
                 } else {
-                    echo "Action не найден: " . $action;
+                    View::errorCode(404);
                 }
             } else {
-                echo "Класс не найден: " . $path_controller;
+                View::errorCode(404);
             }
         } else {
-            echo "Мы потерялись!";
+            View::errorCode(404);
         }
     }
 }
