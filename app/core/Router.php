@@ -2,6 +2,8 @@
 
 namespace app\core;
 
+use app\lib\UserOperation;
+
 class Router
 {
     protected $params = [];
@@ -36,7 +38,10 @@ class Router
                 $action = 'action' . ucfirst($this->params['action']);
                 if (method_exists($path_controller, $action)) {
                     $controller = new $path_controller($this->params);
-                    $controller->$action();
+                    $behaviors = $controller->behaviors();
+                    if ($this->checkBehaviors($behaviors)) {
+                        $controller->$action();
+                    }
                 } else {
                     View::errorCode(404);
                 }
@@ -46,5 +51,27 @@ class Router
         } else {
             View::errorCode(404);
         }
+    }
+
+    private function checkBehaviors($behaviors)
+    {
+        if (empty($behaviors['access']['roles'])) {
+            return true;
+        }
+        foreach ($behaviors['access']['roles'] as $role) {
+            if (in_array($this->params['action'], $role['actions'])) {
+                if (in_array(UserOperation::getRoleUser(), $role['rules'])) {
+                    return true;
+                } else {
+                    if (isset($role['matchCallback'])) {
+                        call_user_func($role['matchCallback']);
+                    } else {
+                        View::errorCode(403);
+                    }
+                    return false;
+                }
+            }
+        }
+        return false;
     }
 }

@@ -20,4 +20,9 @@ abstract class InitController
     public function redirect($url){
         $this->view->redirect($url);
     }
+
+    public function behaviors()
+    {
+        return [];
+    }
 }
