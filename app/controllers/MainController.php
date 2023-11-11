@@ -7,9 +7,7 @@ use app\core\InitController;
 class MainController extends InitController
 {
     public function actionIndex(){
-        $this->render('index',[
-            'key' => 'Ключ'
-        ]);
+        $this->render('index');
     }
 
     public function actionReg(){

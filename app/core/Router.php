@@ -22,9 +22,10 @@ class Router
                 return false;
             }
         } else {
+            $params = require 'app/config/params.php';
             $this->params = [
-                'controller' => 'main',
-                'action' => 'index'
+                'controller' => $params['defaultController'],
+                'action' => $params['defaultAction']
             ];
         }
         return true;
@@ -55,12 +56,12 @@ class Router
 
     private function checkBehaviors($behaviors)
     {
-        if (empty($behaviors['access']['roles'])) {
+        if (empty($behaviors['access']['rules'])) {
             return true;
         }
-        foreach ($behaviors['access']['roles'] as $role) {
+        foreach ($behaviors['access']['rules'] as $role) {
             if (in_array($this->params['action'], $role['actions'])) {
-                if (in_array(UserOperation::getRoleUser(), $role['rules'])) {
+                if (in_array(UserOperation::getRoleUser(), $role['roles'])) {
                     return true;
                 } else {
                     if (isset($role['matchCallback'])) {
@@ -72,6 +73,6 @@ class Router
                 }
             }
         }
-        return false;
+        return true;
     }
 }
