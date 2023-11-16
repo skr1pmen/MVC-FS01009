@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\core\InitController;
+use app\lib\UserOperation;
 use app\models\UserModel;
 
 class UserController extends InitController
@@ -13,8 +14,15 @@ class UserController extends InitController
             'access' => [
                 'rules' => [
                     [
-                        'actions' => ['login'],
-                        'roles' => ['guest'],
+                        'actions' => ['login', 'registration'],
+                        'roles' => [UserOperation::RoleGuest],
+                        'matchCallback' => function () {
+                            $this->redirect('/user/profile');
+                        }
+                    ],
+                    [
+                        'actions' => ['profile', 'logout'],
+                        'roles' => [UserOperation::RoleUser, UserOperation::RoleAdmin],
                         'matchCallback' => function () {
                             $this->redirect('/user/profile');
                         }
@@ -26,12 +34,34 @@ class UserController extends InitController
 
     public function actionLogin()
     {
-        $this->render('login');
+        $this->view->title = "Авторизация";
+        $error_message = '';
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['btn_login_form'])) {
+            $login = !empty($_POST['login']) ? $_POST['login'] : null;
+            $password = !empty($_POST['password']) ? $_POST['password'] : null;
+
+            $userModel = new UserModel();
+            $result_auth = $userModel->authByLogin($login, $password);
+            if ($result_auth['result']) {
+                $this->redirect('/user/profile');
+            } else {
+                $error_message = $result_auth['error_message'];
+            }
+        }
+
+        $this->render('login', [
+            'error_message' => $error_message
+        ]);
     }
 
     public function actionProfile()
     {
-        $this->render("profile");
+        $this->view->title = "Мой профиль";
+        $error_message = '';
+        $this->render("profile", [
+            'sidebar' => UserOperation::getMenuLink(),
+            'error_message' => $error_message
+        ]);
     }
 
     public function actionRegistration()
@@ -75,5 +105,14 @@ class UserController extends InitController
         $this->render('registration', [
             "error_message" => $error_message
         ]);
+    }
+
+    public function actionLogout() {
+        if (isset($_SESSION['user']['id'])) {
+            unset($_SESSION['user']);
+        }
+
+        $params = require "app/config/params.php";
+        $this->redirect('/' . $params['defaultController'] . '/' . $params['defaultAction']);
     }
 }
