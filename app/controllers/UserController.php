@@ -24,7 +24,7 @@ class UserController extends InitController
                         'actions' => ['profile', 'logout'],
                         'roles' => [UserOperation::RoleUser, UserOperation::RoleAdmin],
                         'matchCallback' => function () {
-                            $this->redirect('/user/profile');
+                            $this->redirect('/user/login');
                         }
                     ]
                 ]
@@ -58,6 +58,21 @@ class UserController extends InitController
     {
         $this->view->title = "Мой профиль";
         $error_message = '';
+
+        if ($_SERVER['REQUEST_METHOD'] === "POST" && !empty($_POST['btn_change_password_form'])) {
+            $current_password = !empty($_POST['current_password']) ? $_POST['current_password'] : null;
+            $new_password = !empty($_POST['new_password']) ? $_POST['new_password'] : null;
+            $confirm_new_password = !empty($_POST['confirm_new_password']) ? $_POST['confirm_new_password'] : null;
+
+            $userModel = new UserModel();
+            $result = $userModel->changePassword($current_password, $new_password, $confirm_new_password);
+            if ($result['result']) {
+                $this->redirect('/user/profile');
+            } else {
+                $error_message = $result['error_message'];
+            }
+        }
+
         $this->render("profile", [
             'sidebar' => UserOperation::getMenuLink(),
             'error_message' => $error_message
