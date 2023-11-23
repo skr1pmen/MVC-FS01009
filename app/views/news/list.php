@@ -3,7 +3,7 @@
 /** @var string $role - Список новостей */
 /** @var array $news - Роль пользователя */
 
-use app\lib\UserOperations;
+use app\lib\UserOperation;
 
 ?>
 <div class="page">
@@ -35,7 +35,7 @@ use app\lib\UserOperations;
                                 <div class="news-item">
                                     <h3>
                                         <?=$item['title']?><span> от <?= date('d.m.Y H:i:s',strtotime($item['date_create']))?></span>
-                                        <?php if ($role === UserOperations::RoleAdmin) :?>
+                                        <?php if ($role === UserOperation::RoleAdmin) :?>
                                         (<a href="/news/edit?news_id=<?=$item['id']?>">редактировать</a>
                                             <a href="/news/delete?news_id=<?=$item['id']?>">Удалить</a>)
                                         <?php endif ?>
