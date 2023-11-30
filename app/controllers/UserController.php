@@ -26,6 +26,13 @@ class UserController extends InitController
                         'matchCallback' => function () {
                             $this->redirect('/user/login');
                         }
+                    ],
+                    [
+                        'actions' => ['users'],
+                        'roles' => [UserOperation::RoleAdmin],
+                        'matchCallback' => function () {
+                            $this->redirect('/user/profile');
+                        }
                     ]
                 ]
             ]
@@ -129,5 +136,51 @@ class UserController extends InitController
 
         $params = require "app/config/params.php";
         $this->redirect('/' . $params['defaultController'] . '/' . $params['defaultAction']);
+    }
+
+    public function actionUsers()
+    {
+        $this->view->title = "Пользователи";
+
+        $userModel = new UserModel();
+        $users = $userModel->getListUsers();
+
+        $this->render('users', [
+            'sidebar' => UserOperation::getMenuLink(),
+            'users' => $users,
+            'role' => UserOperation::getRoleUser()
+        ]);
+    }
+
+    public function actionDelete()
+    {
+        $this->view->title = "Удаление пользователя";
+
+        $user_id = !empty($_GET['user_id']) ? $_GET['user_id'] : null;
+        $users = null;
+        $error_message = "";
+
+        if (!empty($user_id)) {
+            $userModel = new UserModel();
+            $users = $userModel->getUserById($user_id);
+            if (!empty($users)) {
+                $result_delete = $userModel->deleteById($user_id);
+                if ($result_delete['result']) {
+                    $this->redirect("/user/users");
+                } else {
+                    $error_message = $result_delete['error_message'];
+                }
+            } else {
+                $error_message = "Пользователь не найдена!";
+            }
+        } else {
+            $error_message = "Отсутствует id пользователя!";
+        }
+
+        $this->render("delete", [
+            'sidebar' => UserOperation::getMenuLink(),
+            'error_message' => $error_message,
+            'users' => $users
+        ]);
     }
 }

@@ -104,4 +104,47 @@ class UserModel extends BaseModel
             'error_message' => $error_message
         ];
     }
+
+    public function getListUsers()
+    {
+        $result = null;
+
+        $users = $this->select("SELECT id, username, login, is_admin FROM users");
+        if (!empty($users)) {
+            $result = $users;
+        }
+
+        return $result;
+    }
+
+    public function getUserById($id)
+    {
+        $result = null;
+
+        $users = $this->select("SELECT * FROM users WHERE id = :id", [
+            'id' => $id
+        ]);
+        if (!empty($users[0])) {
+            $result = $users[0];
+        }
+        return $result;
+    }
+
+    public function deleteById($id)
+    {
+        $result = false;
+        $error_message = '';
+
+        if (empty($id)) {
+            $error_message .= "Отсутствует id пользователя!<br>";
+        }
+        if (empty($error_message)) {
+            $result = $this->delete("DELETE FROM users WHERE id = :id",['id' => $id]);
+        }
+
+        return [
+            'result' => $result,
+            'error_message' => $error_message
+        ];
+    }
 }
